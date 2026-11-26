@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeamCollab · 用户与权限控制台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#2F6BFF;--blue-deep:#2456D6;--blue-weak:#EAF0FF;
+  --green:#2BB673;--green-weak:#E7F7EF;
+  --amber:#F5A623;--amber-weak:#FFF5E3;
+  --red:#E5484D;--red-weak:#FDECEC;
+  --muted:#6B7690;--line:#E8EDF5;--ink:#1B2330;--bg:#F5F7FB;
+  --r:12px;--shadow:0 10px 30px rgba(23,38,73,.10);
+}
+body{
+  font-family:"Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  background:radial-gradient(1200px 500px at 20% -10%, #DDE7FF 0%, #E9EEF7 55%, #EDF1F8 100%);
+  color:var(--ink);min-height:100vh;padding:0 0 40px;
+}
+button,input,select{font-family:inherit;font-size:14px;color:inherit}
+button{cursor:pointer;border:none;background:none}
+
+/* 顶部 */
+.top{height:62px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 26px;position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16px}
+.brand .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#2F6BFF,#6E9BFF);
+  color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800}
+.brand small{font-weight:500;font-size:12px;color:var(--muted);background:#fff;border:1px solid var(--line);padding:2px 8px;border-radius:999px}
+.grow{flex:1}
+.who{display:flex;align-items:center;gap:9px;font-size:14px}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#5B8CFF,#9DB9FF);
+  color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.link{color:var(--muted);font-size:13px;padding:4px 8px;border-radius:6px}
+.link:hover{color:var(--blue);background:#F3F6FD}
+
+/* 登录 */
+.login-wrap{min-height:calc(100vh - 62px);display:flex;align-items:center;justify-content:center;padding:30px 16px}
+.login-card{width:382px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:34px 32px 28px;box-shadow:var(--shadow)}
+.login-card .logo-lg{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#2F6BFF,#6E9BFF);
+  color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;margin-bottom:16px}
+.login-card h1{font-size:21px;margin-bottom:6px}
+.login-card .tip{font-size:13px;color:var(--muted);margin-bottom:22px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.input,.select{height:38px;width:100%;border:1px solid var(--line);border-radius:8px;background:#fff;padding:0 12px;outline:none;transition:.18s}
+.input:focus,.select:focus{border-color:#9DB9FF;box-shadow:0 0 0 3px rgba(47,107,255,.12)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 16px;
+  border-radius:8px;font-size:14px;font-weight:600;border:1px solid transparent;transition:.18s;white-space:nowrap}
+.btn.primary{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(47,107,255,.24)}
+.btn.primary:hover{background:var(--blue-deep)}
+.btn.ghost{background:#fff;border-color:var(--line)}
+.btn.ghost:hover{border-color:#C9D6F0;color:var(--blue)}
+.btn.sm{height:28px;padding:0 10px;font-size:12.5px;border-radius:7px}
+.btn.block{width:100%;height:42px}
+.err{display:none;font-size:12px;color:var(--red);background:var(--red-weak);border-radius:7px;padding:8px 10px;margin-bottom:12px}
+.err.show{display:block}
+.login-foot{margin-top:16px;font-size:11.5px;color:#A2ABBD;text-align:center;line-height:1.7}
+.login-foot b{color:#7A8499}
+
+/* 主体 */
+.page{max-width:1240px;margin:0 auto;padding:24px 22px}
+.grid{display:grid;grid-template-columns:1fr 330px;gap:16px;align-items:start}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.card-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.card-head h3{font-size:15px}
+.count{font-size:12px;color:var(--muted);background:#F3F6FD;border-radius:999px;padding:2px 8px}
+.card-body{padding:14px 16px 16px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;padding:12px 16px;border-bottom:1px solid #F1F4FA;background:#FBFCFF}
+.toolbar .input{width:190px;height:34px}
+.toolbar .select{width:130px;height:34px}
+.toolbar .btn{height:34px}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);background:#F8FAFD;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid #F1F4FA;vertical-align:middle}
+tbody tr:hover{background:#FBFCFF}
+tbody tr:last-child td{border-bottom:none}
+td .name{font-weight:600}
+td .sub{font-size:11.5px;color:#A2ABBD;margin-top:2px}
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:5px;font-size:12px;font-weight:600;margin:1px 4px 1px 0}
+.tag.role{background:var(--blue-weak);color:var(--blue)}
+.tag.role.owner{background:var(--amber-weak);color:#B77A0B}
+.tag.on{background:var(--green-weak);color:#1E9C61}
+.tag.off{background:var(--red-weak);color:var(--red)}
+.tag.perm{background:#F3F6FD;color:var(--muted);font-weight:500}
+.empty{text-align:center;color:#A2ABBD;font-size:13px;padding:38px 0}
+.pager{display:flex;align-items:center;gap:8px;padding:12px 16px;font-size:12px;color:var(--muted);border-top:1px solid #F1F4FA}
+.pg{min-width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:#fff;font-size:12px;color:var(--muted)}
+.pg:hover{border-color:#C9D6F0;color:var(--blue)}
+.pg.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.pg:disabled{opacity:.45;cursor:not-allowed}
+
+/* 右侧 */
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:9px 0;border-bottom:1px dashed var(--line)}
+.kv:last-child{border-bottom:none}
+.kv span{color:var(--muted)}
+.kv b{font-weight:600}
+.perm-box{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;max-height:190px;overflow:auto}
+.roles-list .role-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.roles-list .role-row:last-child{border-bottom:none}
+.roles-list .role-row b{flex:1;font-weight:600}
+.hint{font-size:11.5px;color:#A2ABBD;line-height:1.7;margin-top:10px}
+
+/* 日志 */
+.logs{margin-top:16px}
+.log-line{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:#5C677D;padding:5px 0;border-bottom:1px dashed #F1F4FA;word-break:break-all}
+.log-line b{color:var(--blue);font-weight:600}
+.log-line.bad b{color:var(--red)}
+
+/* 弹窗 */
+.mask{position:fixed;inset:0;background:rgba(18,30,55,.35);display:none;align-items:center;justify-content:center;z-index:40}
+.mask.open{display:flex}
+.modal{width:420px;max-width:92vw;background:#fff;border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.modal-head{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.modal-head h3{font-size:16px;flex:1}
+.modal-body{padding:14px 18px 6px;max-height:56vh;overflow:auto}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px 16px}
+.check-row{display:flex;align-items:center;gap:9px;padding:9px 4px;border-bottom:1px dashed var(--line);font-size:13px;cursor:pointer}
+.check-row:last-child{border-bottom:none}
+.check-row input{accent-color:var(--blue);width:15px;height:15px}
+.check-row .code{font-size:11px;color:#A2ABBD}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,16px);background:#1B2330;color:#fff;
+  font-size:13px;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:99;max-width:80vw}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:980px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand"><span class="logo">T</span> TeamCollab <small>用户与权限控制台</small></div>
+  <div class="grow"></div>
+  <div class="who" id="who" style="display:none">
+    <div class="avatar" id="whoAvatar">?</div>
+    <span id="whoName">—</span>
+    <button class="link" id="logoutBtn">退出</button>
+  </div>
+</div>
+
+<!-- 登录 -->
+<div class="login-wrap" id="loginView">
+  <div class="login-card">
+    <div class="logo-lg">T</div>
+    <h1>登录 TeamCollab</h1>
+    <p class="tip">用户与权限模块 · 后端接口联调页</p>
+    <div class="err" id="loginErr"></div>
+    <div class="field"><label>账号</label><input class="input" id="account" value="chenhaotian" autocomplete="off"></div>
+    <div class="field"><label>密码</label><input class="input" id="password" type="password" value="123456"></div>
+    <button class="btn primary block" id="loginBtn">登 录</button>
+    <div class="login-foot">
+      可用账号：<b>admin</b>（超级管理员，全部权限）、<b>chenhaotian</b>（团队负责人）<br>
+      <b>fangkan</b> / <b>guoyufeng</b> / <b>dujunhao</b>（成员）　密码统一 <b>123456</b>
+    </div>
+  </div>
+</div>
+
+<!-- 主界面 -->
+<div class="page" id="mainView" style="display:none">
+  <div class="grid">
+    <!-- 左：用户列表 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>用户列表</h3><span class="count" id="userCount">0</span>
+        <div class="grow"></div>
+        <button class="link" id="refreshBtn">刷新</button>
+      </div>
+      <div class="toolbar">
+        <input class="input" id="kw" placeholder="账号 / 昵称关键字">
+        <select class="select" id="fStatus">
+          <option value="">全部状态</option><option value="1">启用</option><option value="0">禁用</option>
+        </select>
+        <select class="select" id="fRole">
+          <option value="">全部角色</option>
+          <option value="SUPER_ADMIN">超级管理员</option>
+          <option value="TEAM_OWNER">团队负责人</option>
+          <option value="MEMBER">成员</option>
+          <option value="GUEST">访客</option>
+        </select>
+        <button class="btn ghost sm" id="searchBtn">查询</button>
+        <button class="btn ghost sm" id="resetBtn">重置</button>
+      </div>
+      <div id="tableHost">
+        <div class="empty">加载中…</div>
+      </div>
+      <div class="pager">
+        <span id="pageInfo">—</span>
+        <div class="grow"></div>
+        <button class="pg" id="prevBtn">‹</button>
+        <span id="pageNo" style="min-width:26px;text-align:center">1</span>
+        <button class="pg" id="nextBtn">›</button>
+      </div>
+    </div>
+
+    <!-- 右：身份与角色 -->
+    <div>
+      <div class="card">
+        <div class="card-head"><h3>当前身份</h3></div>
+        <div class="card-body">
+          <div class="kv"><span>用户 ID</span><b id="meId">—</b></div>
+          <div class="kv"><span>账号</span><b id="meAccount">—</b></div>
+          <div class="kv"><span>昵称</span><b id="meNickname">—</b></div>
+          <div class="kv"><span>手机</span><b id="mePhone">—</b></div>
+          <div class="kv"><span>状态</span><b id="meStatus">—</b></div>
+          <div class="kv"><span>邮箱</span><b id="meEmail" style="font-size:12px;word-break:break-all">—</b></div>
+          <div style="margin-top:12px;font-size:12px;color:var(--muted)">角色</div>
+          <div id="meRoles" style="margin-top:6px">—</div>
+          <div style="margin-top:12px;font-size:12px;color:var(--muted)">权限点（<span id="permCount">0</span>）</div>
+          <div class="perm-box" id="mePerms"></div>
+          <div class="hint">权限点来自登录接口返回，按钮显隐据此控制；但每个接口后端都会再判一次，隐藏按钮不等于安全。</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>角色</h3><span class="count" id="roleCount">0</span></div>
+        <div class="card-body roles-list" id="roleList">
+          <div class="empty" style="padding:16px 0">需要 role:list 权限</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 请求日志 -->
+  <div class="card logs">
+    <div class="card-head"><h3>接口请求日志</h3><div class="grow"></div>
+      <span style="font-size:11.5px;color:#A2ABBD">最近 12 条 · 给测试同学看请求与返回码</span>
+      <button class="link" id="clearLog">清空</button>
+    </div>
+    <div class="card-body" id="logHost">
+      <div class="log-line">暂无请求</div>
+    </div>
+  </div>
+</div>
+
+<!-- 分配角色弹窗 -->
+<div class="mask" id="roleMask">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modalTitle">分配角色</h3><button class="link" id="modalClose">关闭</button></div>
+    <div class="modal-body" id="roleOptions">加载中…</div>
+    <div class="modal-foot">
+      <button class="btn ghost" id="modalCancel">取消</button>
+      <button class="btn primary" id="modalSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  // 直接用后端托管时同源；用本地文件双击打开时指向 8080
+  var API = location.protocol === 'file:' ? 'http://localhost:8080' : '';
+  var TOKEN_KEY = 'teamcollab_token';
+
+  var state = {
+    token: localStorage.getItem(TOKEN_KEY) || '',
+    me: null,
+    roles: [],          // 全部角色（/api/roles 返回）
+    users: [],          // 当前页用户
+    total: 0,
+    page: 1,
+    size: 10,
+    editingUserId: null
+  };
+
+  function $(s) { return document.querySelector(s); }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined && text !== null) e.textContent = text;
+    return e;
+  }
+  function toast(msg) {
+    var t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { t.classList.remove('show'); }, 2400);
+  }
+
+  /* ---------------- 请求封装 ---------------- */
+  function request(method, path, body) {
+    var opt = { method: method, headers: {} };
+    if (state.token) opt.headers['Authorization'] = 'Bearer ' + state.token;
+    if (body !== undefined) {
+      opt.headers['Content-Type'] = 'application/json';
+      opt.body = JSON.stringify(body);
+    }
+    var started = Date.now();
+    return fetch(API + path, opt)
+      .then(function (res) {
+        return res.json().catch(function () { return { code: res.status, msg: '响应不是 JSON' }; })
+          .then(function (data) { return { status: res.status, data: data, cost: Date.now() - started }; });
+      })
+      .then(function (r) {
+        log(method, path, r);
+        if (r.data && (r.data.code === 40101 || r.data.code === 40102)) {
+          doLogout(true);
+          throw new Error(r.data.msg || '登录已失效');
+        }
+        return r;
+      })
+      .catch(function (e) {
+        if (!e.__logged) {
+          log(method, path, { status: 'ERR', data: { msg: e.message }, cost: 0 });
+        }
+        throw e;
+      });
+  }
+
+  function log(method, path, r) {
+    var host = $('#logHost');
+    if (host.firstElementChild && host.firstElementChild.textContent === '暂无请求') host.innerHTML = '';
+    var ok = r.status === 200 && r.data && r.data.code === 0;
+    var line = el('div', 'log-line' + (ok ? '' : ' bad'));
+    var t = new Date();
+    var ts = ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + ':' + ('0' + t.getSeconds()).slice(-2);
+    var codeText = r.data ? r.data.code : '-';
+    line.innerHTML = '<b>' + method + '</b> ' + path + ' → HTTP ' + r.status + ' / code ' + codeText +
+      ' · ' + (r.cost || 0) + 'ms · ' + ts + (ok ? '' : ' · ' + ((r.data && r.data.msg) || ''));
+    host.insertBefore(line, host.firstChild);
+    while (host.children.length > 12) host.removeChild(host.lastChild);
+  }
+
+  /* ---------------- 登录 / 登出 ---------------- */
+  function doLogin() {
+    var account = $('#account').value.trim();
+    var password = $('#password').value.trim();
+    var err = $('#loginErr');
+    err.classList.remove('show');
+    if (!account || !password) {
+      err.textContent = '账号和密码都要填';
+      err.classList.add('show');
+      return;
+    }
+    request('POST', '/api/auth/login', { account: account, password: password })
+      .then(function (r) {
+        if (r.data.code !== 0) {
+          err.textContent = r.data.msg || '登录失败';
+          err.classList.add('show');
+          return;
+        }
+        state.token = r.data.data.token;
+        localStorage.setItem(TOKEN_KEY, state.token);
+        state.me = r.data.data;
+        enterApp();
+        toast('登录成功，欢迎 ' + state.me.nickname);
+      })
+      .catch(function (e) {
+        if (!state.token) {
+          err.textContent = '连不上后端（' + e.message + '）：确认 8080 已启动，或用 http://localhost:8080 打开本页';
+          err.classList.add('show');
+        }
+      });
+  }
+
+  function doLogout(silent) {
+    var tokenBefore = state.token;
+    state.token = '';
+    state.me = null;
+    localStorage.removeItem(TOKEN_KEY);
+    $('#mainView').style.display = 'none';
+    $('#loginView').style.display = '';
+    $('#who').style.display = 'none';
+    if (!silent) toast('已退出登录');
+    if (tokenBefore) {
+      // 调后端登出，把 Token 加入失效名单
+      fetch(API + '/api/auth/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + tokenBefore } })
+        .catch(function () {});
+    }
+    if (silent) toast('登录已失效，请重新登录');
+  }
+
+  function enterApp() {
+    $('#loginView').style.display = 'none';
+    $('#mainView').style.display = '';
+    $('#who').style.display = 'flex';
+    $('#whoAvatar').textContent = (state.me.nickname || '?').charAt(0);
+    $('#whoName').textContent = state.me.nickname + ' · ' + (state.me.roles || []).join(',');
+    renderMe();
+    loadRoles();
+    loadUsers(1);
+  }
+
+  function hasPerm(code) {
+    if (!state.me) return false;
+    var roles = state.me.roles || [];
+    return roles.indexOf('SUPER_ADMIN') > -1 || (state.me.permissions || []).indexOf(code) > -1;
+  }
+
+  /* ---------------- 当前身份 ---------------- */
+  function renderMe() {
+    var me = state.me || {};
+    $('#meId').textContent = me.userId || me.id || '—';
+    $('#meAccount').textContent = me.account || '—';
+    $('#meNickname').textContent = me.nickname || '—';
+    $('#mePhone').textContent = me.phone || '—';
+    $('#meStatus').textContent = me.status === 1 ? '启用' : '禁用';
+    $('#meEmail').textContent = me.email || '—';
+
+    var roleHost = $('#meRoles');
+    roleHost.innerHTML = '';
+    (me.roles || []).forEach(function (r) {
+      var t = el('span', 'tag role' + (r === 'TEAM_OWNER' ? ' owner' : ''), r);
+      roleHost.appendChild(t);
+    });
+
+    var perms = me.permissions || [];
+    $('#permCount').textContent = perms.length;
+    var host = $('#mePerms');
+    host.innerHTML = '';
+    perms.forEach(function (p) { host.appendChild(el('span', 'tag perm', p)); });
+    if (!perms.length) host.appendChild(el('span', 'tag perm', '无'));
+  }
+
+  /* ---------------- 用户列表 ---------------- */
+  function loadUsers(page) {
+    state.page = page || 1;
+    var q = [];
+    q.push('page=' + state.page);
+    q.push('size=' + state.size);
+    var kw = $('#kw').value.trim();
+    if (kw) q.push('keyword=' + encodeURIComponent(kw));
+    if ($('#fStatus').value) q.push('status=' + $('#fStatus').value);
+    if ($('#fRole').value) q.push('roleCode=' + $('#fRole').value);
+
+    request('GET', '/api/users?' + q.join('&'))
+      .then(function (r) {
+        if (r.data.code === 40301) {
+          renderForbidden();
+          return;
+        }
+        if (r.data.code !== 0) {
+          toast(r.data.msg || '查询失败');
+          return;
+        }
+        state.users = r.data.data.records || [];
+        state.total = r.data.data.total || 0;
+        renderUsers();
+      })
+      .catch(function (e) { toast('请求失败：' + e.message); });
+  }
+
+  function renderForbidden() {
+    $('#tableHost').innerHTML = '';
+    var box = el('div', 'empty');
+    box.innerHTML = '当前账号没有 <b>user:list</b> 权限<br><span style="font-size:12px">这是权限校验生效的正常表现：用 admin 登录可查看用户管理</span>';
+    $('#tableHost').appendChild(box);
+    $('#userCount').textContent = 0;
+    $('#pageInfo').textContent = '—';
+  }
+
+  function renderUsers() {
+    $('#userCount').textContent = state.total;
+    var host = $('#tableHost');
+    host.innerHTML = '';
+
+    if (!state.users.length) {
+      host.appendChild(el('div', 'empty', '没有符合条件的用户'));
+    } else {
+      var table = el('table');
+      var thead = el('thead');
+      var trh = el('tr');
+      ['用户', '账号', '手机', '角色', '状态', '操作'].forEach(function (h) {
+        trh.appendChild(el('th', null, h));
+      });
+      thead.appendChild(trh);
+      table.appendChild(thead);
+
+      var tbody = el('tbody');
+      state.users.forEach(function (u) {
+        var tr = el('tr');
+
+        var td1 = el('td');
+        var n = el('div', 'name', u.nickname || '—');
+        var s = el('div', 'sub', u.email || '');
+        td1.appendChild(n); td1.appendChild(s);
+        tr.appendChild(td1);
+
+        tr.appendChild(el('td', null, u.account));
+
+        var td3 = el('td');
+        td3.textContent = u.phone || '—';
+        td3.style.fontSize = '12.5px';
+        tr.appendChild(td3);
+
+        var td4 = el('td');
+        var codes = (u.roleCodes || '').split(',').filter(Boolean);
+        var names = (u.roleNames || '').split(',').filter(Boolean);
+        codes.forEach(function (c, i) {
+          var t = el('span', 'tag role' + (c === 'TEAM_OWNER' ? ' owner' : ''), names[i] || c);
+          td4.appendChild(t);
+        });
+        if (!codes.length) td4.appendChild(el('span', 'sub', '无角色'));
+        tr.appendChild(td4);
+
+        var td5 = el('td');
+        td5.appendChild(el('span', 'tag ' + (u.status === 1 ? 'on' : 'off'), u.status === 1 ? '启用' : '禁用'));
+        tr.appendChild(td5);
+
+        var td6 = el('td');
+        if (hasPerm('user:assign-role')) {
+          var b1 = el('button', 'link', '分配角色');
+          b1.addEventListener('click', function () { openRoleModal(u); });
+          td6.appendChild(b1);
+        }
+        if (hasPerm('user:disable')) {
+          var b2 = el('button', 'link', u.status === 1 ? '禁用' : '启用');
+          b2.style.color = u.status === 1 ? 'var(--red)' : 'var(--green)';
+          b2.addEventListener('click', function () { toggleStatus(u); });
+          td6.appendChild(b2);
+        }
+        if (!td6.children.length) td6.appendChild(el('span', 'sub', '只读'));
+        tr.appendChild(td6);
+
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      host.appendChild(table);
+    }
+
+    var pages = Math.max(1, Math.ceil(state.total / state.size));
+    $('#pageInfo').textContent = '共 ' + state.total + ' 条 · 第 ' + state.page + ' / ' + pages + ' 页';
+    $('#pageNo').textContent = state.page;
+    $('#prevBtn').disabled = state.page <= 1;
+    $('#nextBtn').disabled = state.page >= pages;
+  }
+
+  function toggleStatus(u) {
+    var target = u.status === 1 ? 0 : 1;
+    request('PUT', '/api/users/' + u.id + '/status?status=' + target)
+      .then(function (r) {
+        if (r.data.code === 0) {
+          toast('已' + (target === 1 ? '启用' : '禁用') + ' ' + u.nickname);
+          loadUsers(state.page);
+        } else {
+          toast(r.data.msg || '操作失败');
+        }
+      })
+      .catch(function (e) { toast('请求失败：' + e.message); });
+  }
+
+  /* ---------------- 角色 ---------------- */
+  function loadRoles() {
+    request('GET', '/api/roles')
+      .then(function (r) {
+        if (r.data.code !== 0) {
+          $('#roleList').innerHTML = '<div class="empty" style="padding:16px 0">无法读取角色（' + (r.data.msg || '') + '）</div>';
+          return;
+        }
+        state.roles = r.data.data || [];
+        $('#roleCount').textContent = state.roles.length;
+        var host = $('#roleList');
+        host.innerHTML = '';
+        state.roles.forEach(function (role) {
+          var row = el('div', 'role-row');
+          row.appendChild(el('b', null, role.roleName));
+          row.appendChild(el('span', 'sub', role.roleCode));
+          var btn = el('button', 'link', '看权限');
+          btn.addEventListener('click', function () { showRolePermissions(role); });
+          row.appendChild(btn);
+          host.appendChild(row);
+        });
+      })
+      .catch(function () {
+        $('#roleList').innerHTML = '<div class="empty" style="padding:16px 0">无法读取角色</div>';
+      });
+  }
+
+  function showRolePermissions(role) {
+    request('GET', '/api/roles/' + role.id + '/permissions')
+      .then(function (r) {
+        if (r.data.code !== 0) { toast(r.data.msg || '读取失败'); return; }
+        var list = r.data.data || [];
+        var names = list.map(function (p) { return p.code; });
+        toast(role.roleName + '：' + (names.length ? names.join('、') : '无权限点'));
+      });
+  }
+
+  /* ---------------- 分配角色弹窗 ---------------- */
+  function openRoleModal(user) {
+    state.editingUserId = user.id;
+    $('#modalTitle').textContent = '分配角色 · ' + (user.nickname || user.account);
+    var current = (user.roleCodes || '').split(',').filter(Boolean);
+    var host = $('#roleOptions');
+    host.innerHTML = '';
+
+    if (!state.roles.length) {
+      host.appendChild(el('div', 'empty', '角色列表为空，先刷新'));
+    }
+    state.roles.forEach(function (role) {
+      var row = el('label', 'check-row');
+      var cb = el('input');
+      cb.type = 'checkbox';
+      cb.value = role.id;
+      cb.checked = current.indexOf(role.roleCode) > -1;
+      row.appendChild(cb);
+      var span = el('span', null, role.roleName);
+      row.appendChild(span);
+      row.appendChild(el('span', 'code', role.roleCode));
+      host.appendChild(row);
+    });
+    $('#roleMask').classList.add('open');
+  }
+
+  function saveRoles() {
+    var ids = [];
+    document.querySelectorAll('#roleOptions input[type=checkbox]').forEach(function (cb) {
+      if (cb.checked) ids.push(Number(cb.value));
+    });
+    if (!ids.length) { toast('至少选一个角色'); return; }
+    request('PUT', '/api/users/' + state.editingUserId + '/roles', { roleIds: ids })
+      .then(function (r) {
+        if (r.data.code === 0) {
+          toast('角色已更新，权限立即生效');
+          closeModal();
+          loadUsers(state.page);
+        } else {
+          toast(r.data.msg || '保存失败');
+        }
+      })
+      .catch(function (e) { toast('请求失败：' + e.message); });
+  }
+
+  function closeModal() {
+    $('#roleMask').classList.remove('open');
+    state.editingUserId = null;
+  }
+
+  /* ---------------- 事件 ---------------- */
+  $('#loginBtn').addEventListener('click', doLogin);
+  $('#password').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+  $('#account').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+  $('#logoutBtn').addEventListener('click', function () { doLogout(false); });
+
+  $('#refreshBtn').addEventListener('click', function () { loadUsers(state.page); loadRoles(); });
+  $('#searchBtn').addEventListener('click', function () { loadUsers(1); });
+  $('#resetBtn').addEventListener('click', function () {
+    $('#kw').value = ''; $('#fStatus').value = ''; $('#fRole').value = '';
+    loadUsers(1);
+  });
+  $('#kw').addEventListener('keydown', function (e) { if (e.key === 'Enter') loadUsers(1); });
+  $('#fStatus').addEventListener('change', function () { loadUsers(1); });
+  $('#fRole').addEventListener('change', function () { loadUsers(1); });
+  $('#prevBtn').addEventListener('click', function () { if (state.page > 1) loadUsers(state.page - 1); });
+  $('#nextBtn').addEventListener('click', function () { loadUsers(state.page + 1); });
+  $('#clearLog').addEventListener('click', function () {
+    $('#logHost').innerHTML = '<div class="log-line">暂无请求</div>';
+  });
+  $('#modalClose').addEventListener('click', closeModal);
+  $('#modalCancel').addEventListener('click', closeModal);
+  $('#modalSave').addEventListener('click', saveRoles);
+  $('#roleMask').addEventListener('click', function (e) { if (e.target === $('#roleMask')) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+  /* ---------------- 初始化：有 Token 就试着进 ---------------- */
+  if (state.token) {
+    request('GET', '/api/auth/me')
+      .then(function (r) {
+        if (r.data.code === 0) {
+          var d = r.data.data;
+          state.me = {
+            userId: d.id, account: d.account, nickname: d.nickname, email: d.email,
+            phone: d.phone, status: d.status, roles: d.roles, permissions: d.permissions
+          };
+          enterApp();
+        } else {
+          doLogout(true);
+        }
+      })
+      .catch(function () { doLogout(true); });
+  }
+})();
+</script>
+</body>
+</html>
