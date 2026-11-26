@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamcollab.user.mapper.PermissionMapper">
+
+    <!-- 用户 -> 角色 -> 权限点，一次展开，避免每次请求反复查库 -->
+    <select id="selectPermCodesByUserId" resultType="java.lang.String">
+        SELECT DISTINCT p.code
+        FROM sys_permission p
+        JOIN sys_role_permission rp ON rp.permission_id = p.id
+        JOIN sys_user_role ur ON ur.role_id = rp.role_id
+        JOIN sys_role r ON r.id = ur.role_id AND r.status = 1
+        WHERE ur.user_id = #{userId}
+    </select>
+
+    <select id="selectPermissionsByRoleId" resultType="com.teamcollab.user.entity.Permission">
+        SELECT p.id, p.code, p.name, p.type, p.parent_id, p.sort, p.created_at
+        FROM sys_permission p
+        JOIN sys_role_permission rp ON rp.permission_id = p.id
+        WHERE rp.role_id = #{roleId}
+        ORDER BY p.sort, p.id
+    </select>
+
+    <select id="selectAllOrdered" resultType="com.teamcollab.user.entity.Permission">
+        SELECT id, code, name, type, parent_id, sort, created_at
+        FROM sys_permission
+        ORDER BY sort, id
+    </select>
+
+</mapper>
