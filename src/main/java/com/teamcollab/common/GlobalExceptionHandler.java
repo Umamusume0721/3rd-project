@@ -10,9 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/**
- * 全局异常处理：把异常统一转成 { code, msg, data }，前端不必处理 500 页面。
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -21,7 +18,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BizException.class)
     @ResponseStatus(HttpStatus.OK)
     public R<Void> handleBiz(BizException e) {
-        // 业务异常不打印堆栈，避免日志被刷爆
+
         log.warn("业务异常: code={}, msg={}", e.getErrorCode().getCode(), e.getMessage());
         return R.fail(e.getErrorCode().getCode(), e.getMessage());
     }

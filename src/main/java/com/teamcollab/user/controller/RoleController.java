@@ -17,9 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * 角色与权限点查询、角色授权。
- */
 @RestController
 @RequestMapping("/api")
 public class RoleController {
@@ -38,7 +35,6 @@ public class RoleController {
         return R.ok(roleService.list());
     }
 
-    /** 全部权限点（给角色授权弹窗用） */
     @GetMapping("/permissions")
     @RequirePermission(PermCodes.ROLE_LIST)
     public R<List<Permission>> permissions() {

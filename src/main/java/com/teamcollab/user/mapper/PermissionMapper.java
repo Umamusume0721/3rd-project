@@ -10,9 +10,6 @@ import java.util.List;
 @Mapper
 public interface PermissionMapper extends BaseMapper<Permission> {
 
-    /**
-     * 三表关联展开用户的有效权限点：user_role -> role_permission -> permission。
-     */
     List<String> selectPermCodesByUserId(@Param("userId") Long userId);
 
     List<Permission> selectPermissionsByRoleId(@Param("roleId") Long roleId);

@@ -20,9 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * 用户管理：分页查询、资料修改、角色分配、启用禁用。
- */
 @Service
 public class UserService {
 
@@ -42,7 +39,7 @@ public class UserService {
     }
 
     public IPage<UserPageVO> page(UserQuery query) {
-        // 页码与页大小都要兜底，防止 pageSize=100000 把库拖死
+
         long pageNo = Math.max(query.getPage(), 1L);
         long pageSize = Math.min(Math.max(query.getSize(), 1L), MAX_PAGE_SIZE);
         if (query.getKeyword() != null) {
@@ -96,9 +93,6 @@ public class UserService {
         return detail(userId);
     }
 
-    /**
-     * 分配角色：先校验角色是否合法，再整体覆盖（先删后插）。
-     */
     public void assignRoles(Long userId, List<Long> roleIds) {
         User user = userMapper.selectById(userId);
         if (user == null) {

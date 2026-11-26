@@ -15,15 +15,12 @@ public class UserPageVO {
 
     private String email;
 
-    /** 已脱敏 */
     private String phone;
 
     private Integer status;
 
-    /** 逗号分隔的角色编码，如 TEAM_OWNER */
     private String roleCodes;
 
-    /** 逗号分隔的角色名称，如 团队负责人 */
     private String roleNames;
 
     private LocalDateTime createdAt;

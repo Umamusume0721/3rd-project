@@ -4,9 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-/**
- * 当前登录用户上下文对象，由拦截器解析 Token 后放入 UserContext。
- */
 public class LoginUser {
 
     private final Long userId;
@@ -26,9 +23,6 @@ public class LoginUser {
         this.superAdmin = superAdmin;
     }
 
-    /**
-     * 是否拥有某个权限点：超级管理员直接放行，其余按权限集合判定。
-     */
     public boolean hasPermission(String code) {
         return superAdmin || permCodes.contains(code);
     }

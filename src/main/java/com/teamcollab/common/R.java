@@ -2,10 +2,6 @@ package com.teamcollab.common;
 
 import java.io.Serializable;
 
-/**
- * 统一返回结构：{ code, msg, data }
- * code = 0 表示成功，非 0 见 ErrorCode。
- */
 public class R<T> implements Serializable {
 
     private int code;

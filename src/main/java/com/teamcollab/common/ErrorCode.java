@@ -1,9 +1,5 @@
 package com.teamcollab.common;
 
-/**
- * 统一错误码。
- * 约定：前三位与 HTTP 语义对齐，后两位区分具体原因，前端按 code 决定跳转/提示。
- */
 public enum ErrorCode {
 
     SUCCESS(0, "成功"),

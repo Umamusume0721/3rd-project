@@ -15,9 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * 角色与角色权限维护。
- */
 @Service
 public class RoleService {
 
@@ -50,9 +47,6 @@ public class RoleService {
         return permissionMapper.selectPermissionsByRoleId(roleId);
     }
 
-    /**
-     * 覆盖式配置角色权限：删完再插，最后清缓存（会影响所有持该角色的用户）。
-     */
     @Transactional(rollbackFor = Exception.class)
     public void assignPermissions(Long roleId, AssignPermissionRequest request) {
         Role role = roleMapper.selectById(roleId);

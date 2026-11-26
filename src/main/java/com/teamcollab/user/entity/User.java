@@ -23,10 +23,8 @@ public class User {
 
     private String phone;
 
-    /** 密码哈希，只存 BCrypt 结果，禁止存明文 */
     private String passwordHash;
 
-    /** 1 启用 0 禁用 */
     private Integer status;
 
     @TableLogic

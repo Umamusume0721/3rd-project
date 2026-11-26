@@ -12,11 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 权限查询与缓存。
- * 每个请求都要判权限，直接查库会打爆数据库，所以按 userId 缓存 5 分钟；
- * 角色或权限发生变更时调用 evict/clearAll 让它立即失效。
- */
 @Service
 public class PermissionService {
 
@@ -54,7 +49,6 @@ public class PermissionService {
         return perms;
     }
 
-    /** 某个用户角色变更后调用 */
     public void evict(Long userId) {
         if (userId != null) {
             roleCache.remove(userId);
@@ -62,7 +56,6 @@ public class PermissionService {
         }
     }
 
-    /** 角色-权限关系变更会影响多个用户，直接整体清空 */
     public void clearAll() {
         roleCache.clear();
         permCache.clear();

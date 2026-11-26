@@ -19,10 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-/**
- * 权限拦截器：
- * 请求进入 -> 取 Token -> 解析并校验 -> 写入用户上下文 -> 按 @RequirePermission 判定 -> 放行或 40301。
- */
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 
@@ -45,7 +41,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        // 预检请求直接放行
+
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
@@ -67,7 +63,6 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        // 登出后的 Token 立即失效
         if (tokenBlacklist.contains(claims.getId())) {
             reject(response, ErrorCode.TOKEN_EXPIRED, 401);
             return false;
@@ -84,7 +79,6 @@ public class AuthInterceptor implements HandlerInterceptor {
         LoginUser loginUser = new LoginUser(userId, account, nickname, roleCodes, permCodes, superAdmin);
         UserContext.set(loginUser);
 
-        // 注解级权限判定
         if (handler instanceof HandlerMethod) {
             HandlerMethod method = (HandlerMethod) handler;
             RequirePermission required = method.getMethodAnnotation(RequirePermission.class);
@@ -102,7 +96,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) {
-        // 必须清理，否则线程复用时上下文会串号
+
         UserContext.clear();
     }
 

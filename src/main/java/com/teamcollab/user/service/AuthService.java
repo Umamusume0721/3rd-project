@@ -21,9 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Set;
 
-/**
- * 登录 / 登出 / 当前用户信息。
- */
 @Service
 public class AuthService {
 
@@ -49,7 +46,6 @@ public class AuthService {
     public LoginVO login(LoginRequest request) {
         User user = userMapper.selectByAccount(request.getAccount().trim());
 
-        // 账号不存在与密码错误返回同一提示，避免被用来枚举账号
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             log.warn("登录失败：account={}", request.getAccount());
             throw new BizException(ErrorCode.ACCOUNT_OR_PWD_ERROR);
@@ -74,9 +70,6 @@ public class AuthService {
         return vo;
     }
 
-    /**
-     * 登出：把当前 Token 的 jti 加入失效名单，有效期到该 Token 自然过期为止。
-     */
     public void logout(String token) {
         if (token == null || token.isBlank()) {
             return;
@@ -85,7 +78,7 @@ public class AuthService {
             Claims claims = jwtUtil.parse(token);
             tokenBlacklist.add(claims.getId(), claims.getExpiration().getTime());
         } catch (Exception e) {
-            // Token 本身已失效，登出直接成功
+
             log.debug("登出时 Token 已失效：{}", e.getMessage());
         }
     }
@@ -109,9 +102,6 @@ public class AuthService {
         return vo;
     }
 
-    /**
-     * 手机号脱敏：13800000002 -> 138****0002
-     */
     public static String maskPhone(String phone) {
         if (phone == null || phone.length() < 7) {
             return phone;

@@ -17,7 +17,6 @@ public class UserInfoVO {
 
     private String email;
 
-    /** 已脱敏，如 138****0002 */
     private String phone;
 
     private Integer status;
